@@ -1,10 +1,4 @@
 #include "bridge.h"
-#include <sstream>
-#include <iterator>
-#include <fstream>
-#include <algorithm>
-#include <tuple>
-#include <map>
 
 struct config_msg
 {
@@ -50,10 +44,6 @@ struct lan
         id = "";
     }
 
-    void send_data()
-    {
-        ;
-    }
 
     bool operator<(lan l)
     {
@@ -72,6 +62,8 @@ struct bridge
     config_msg msg;
     vector< tuple<config_msg, lan*> > new_queue; // Messages that need to be processes and forwarded in next second
     vector< tuple<config_msg, lan*> > old_queue; // Messages to be forwarded on this second
+    vector<tuple<string, string, lan*> > new_data;
+    vector<tuple<string, string, lan*> > old_data;
 
 
     bridge()
@@ -119,6 +111,9 @@ struct bridge
             get<1>(mes)->designated_bridges.erase(remove(get<1>(mes)->designated_bridges.begin(),
                                                          get<1>(mes)->designated_bridges.end(), this->id),
                                                   get<1>(mes)->designated_bridges.end());
+            get<1>(mes)->bridges.erase(remove(get<1>(mes)->bridges.begin(),
+                                                         get<1>(mes)->bridges.end(), this->id),
+                                                  get<1>(mes)->bridges.end());
         }
     }
 
@@ -129,7 +124,7 @@ struct bridge
             if(r.first != get<1>(mes) and r.second != "NP")
             {
                 lan* l = r.first;
-                for(auto s: l->bridges) // TODO Take care might need to store active bridges only
+                for(auto s: l->bridges)
                 {
                     bridge* b = all_bridges[s];
                     if(b->port[l] != "NP") {
@@ -140,6 +135,52 @@ struct bridge
             }
         }
     }
+
+    void send(string h1, string h2, lan* l)
+    {
+
+        if(forwarding_table.find(h1) == forwarding_table.end())
+        {
+            forwarding_table[h1] = l;
+        }
+
+        if(forwarding_table.find(h2) == forwarding_table.end())
+        {
+            for(auto r: port)
+            {
+                if(r.first != l and r.second != "NP")
+                {
+                    lan* l1 = r.first;
+                    for(auto s: l1->bridges)
+                    {
+                        bridge* b = all_bridges[s];
+                        if(b != this) {
+                            tuple < string, string, lan * > tup(h1, h2, l1);
+                            b->new_data.push_back(tup);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            lan* l1 = forwarding_table[h2];
+            if(l1 != l)
+            { ;
+                for(auto s: l1->bridges)
+                {
+                    bridge* b = all_bridges[s];
+                    if(b != this) {
+                        tuple < string, string, lan * > tup(h1, h2, l1);
+                        b->new_data.push_back(tup);
+                    }
+                }
+            }
+        }
+
+    }
+
+
 };
 
 
@@ -148,6 +189,7 @@ vector<lan*> stop_cond;
 class network
 {
     unordered_map<string, lan*> all_lan; // lan-id vs lan
+    unordered_map<string, lan*> hostsTOlan; // host vs lan
     bridge* bridges;
     int num_bridges;
     int trace;
@@ -225,6 +267,7 @@ public:
                 {
                     lan* current = all_lan[lan_name];
                     current->hosts.push_back(s);
+                    hostsTOlan[s] = current;
                 }
                 j++;
             }
@@ -253,7 +296,7 @@ public:
             cout << bridges[i].is_root << endl;
         }
 
-        // printing for checking LAN structure
+//         printing for checking LAN structure
         for(auto s: all_lan)
         {
             cout << s.first << endl;
@@ -278,6 +321,37 @@ public:
             }
             cout << endl;
         }
+
+        int packets;
+        cin >> packets;
+
+        for(int i = 0; i < packets; i++)
+        {
+            string h1, h2;
+            cin >> h1 >> h2;
+            lan* l = hostsTOlan[h1];
+            bridge* b = all_bridges[l->designated_bridges[0]];
+            tuple<string, string, lan*> tup(h1, h2, l);
+            b->old_data.push_back(tup);
+            for(int k = 0; k < 30; k++)
+            {
+                for(int i = 0; i < num_bridges; i++)
+                {
+                    for(auto m: bridges[i].old_data)
+                    {
+                        bridges[i].send(get<0>(m), get<1>(m), get<2>(m));
+                    }
+
+                }
+
+                for(int i = 0; i < num_bridges; i++)
+                {
+                    bridges[i].old_data = bridges[i].new_data;
+                    bridges[i].new_data.clear();
+                }
+
+            }
+        }
     }
 
     void init_stp()
@@ -291,13 +365,16 @@ public:
             {
                 for(auto m: bridges[i].old_queue)
                 {
+                    trace_file << time << " " << bridges[i].id << " " << "r" << " " << get<0>(m).sender_id << "\n";
                     bridges[i].update_msg(m);
                     tuple<config_msg, lan*> tup(bridges[i].msg, get<1>(m));
                     bridges[i].forward(tup);
                 }
 
-                if(bridges[i].is_root)
-                    bridges[i].forward(bridges[i].msg);
+                if(bridges[i].is_root) {
+                    tuple<config_msg, lan*> tup(bridges[i].msg, NULL);
+                    bridges[i].forward(tup);
+                }
             }
 
             for(int i = 0; i < num_bridges; i++)
@@ -319,8 +396,10 @@ public:
 
             time++;
         }
+
         trace_file.close();
     }
+
 };
 
 int main()
