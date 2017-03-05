@@ -294,7 +294,7 @@ public:
                 cout << s << "-" << ordered[s] << " ";
             }
             cout << endl;
-            cout << bridges[i].is_root << endl;
+//            cout << bridges[i].is_root << endl;
         }
 
 //         printing for checking LAN structure
