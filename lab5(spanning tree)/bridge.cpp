@@ -117,7 +117,7 @@ struct bridge
         }
     }
 
-    void forward(tuple<config_msg, lan*> mes)
+    void forward(tuple<config_msg, lan*> mes, int time, ofstream &trace_file)
     {
         for(auto r: port)
         {
@@ -128,6 +128,7 @@ struct bridge
                 {
                     bridge* b = all_bridges[s];
                     if(b->port[l] != "NP") {
+                        trace_file << time << " " << id << " " << "s" << b->id << "\n";
                         tuple < config_msg, lan * > tup(get<0>(mes), l);
                         b->new_queue.push_back(tup);
                     }
@@ -297,30 +298,30 @@ public:
         }
 
 //         printing for checking LAN structure
-        for(auto s: all_lan)
-        {
-            cout << s.first << endl;
-            cout << "Bridges: ";
-            for(auto r: s.second->bridges)
-            {
-                cout << r << " ";
-            }
-
-            cout << endl << "Designated Bridges: ";
-
-            for(auto r: s.second->designated_bridges)
-            {
-                cout << r << " ";
-            }
-
-            cout << endl << "Hosts: ";
-
-            for(auto r: s.second->hosts)
-            {
-                cout << r << " ";
-            }
-            cout << endl;
-        }
+//        for(auto s: all_lan)
+//        {
+//            cout << s.first << endl;
+//            cout << "Bridges: ";
+//            for(auto r: s.second->bridges)
+//            {
+//                cout << r << " ";
+//            }
+//
+//            cout << endl << "Designated Bridges: ";
+//
+//            for(auto r: s.second->designated_bridges)
+//            {
+//                cout << r << " ";
+//            }
+//
+//            cout << endl << "Hosts: ";
+//
+//            for(auto r: s.second->hosts)
+//            {
+//                cout << r << " ";
+//            }
+//            cout << endl;
+//        }
 
         int packets;
         cin >> packets;
@@ -352,6 +353,16 @@ public:
 
             }
         }
+
+        for(int i = 0; i < num_bridges; i++)
+        {
+            cout << bridges[i].id << ":" << endl;
+            cout << "HOST ID | FORWARDING PORT" << endl;
+            for(auto r: bridges[i].forwarding_table)
+            {
+                cout << r.first << " | " << r.second->id << endl;
+            }
+        }
     }
 
     void init_stp()
@@ -368,12 +379,12 @@ public:
                     trace_file << time << " " << bridges[i].id << " " << "r" << " " << get<0>(m).sender_id << "\n";
                     bridges[i].update_msg(m);
                     tuple<config_msg, lan*> tup(bridges[i].msg, get<1>(m));
-                    bridges[i].forward(tup);
+                    bridges[i].forward(tup, time, trace_file);
                 }
 
                 if(bridges[i].is_root) {
                     tuple<config_msg, lan*> tup(bridges[i].msg, NULL);
-                    bridges[i].forward(tup);
+                    bridges[i].forward(tup, time, trace_file);
                 }
             }
 
