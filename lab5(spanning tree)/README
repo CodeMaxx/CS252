@@ -1,0 +1,20 @@
+1 class - network
+
+3 structs - lan, config_msg, bridge
+
+Network handles all input and output and calls specific function in other structs for tasks.
+
+config_msg stores the messages sent during the original spanning tree protocol. A function update message is used to change the message contents.
+
+lan stores the active bridges connected to it, the designated bridge, its id and host connected to it.
+
+bridge implements a lot of functionality. update_msg function checks if the configuration at a bridge has to be updated and updates it. forward function sends the configuration message to further bridges. send function send the data from one lan to other and also updates the forwarding table.
+
+The trace will be in trace.txt and is of the form 
+
+t Bk(current bridge) s|r (sending bridge)
+
+The config messages or data are stored in a queue to be sent at the next iteration(which marks the next second of time) of the loop.
+
+// Sorry, I don't have time to get the exact output, please see through the code. I will post the updated version if submission is allowed later.
+
