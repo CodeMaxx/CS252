@@ -10,13 +10,14 @@ void Trie::insert(string ip, string mask) {
     string ip_bin = iptobin(ip);
 
     for (int i = 0; i < len; ++i) {
-        if(trav->next[atoi(ip_bin[i])] == NULL)
-            trav->next[atoi(ip_bin[i])] = new node();
+        string bit(1, ip_bin[i]);
+        if(trav->next[atoi(bit.c_str())] == NULL)
+            trav->next[atoi(bit.c_str())] = new node();
 
-        trav = trav->next[atoi(ip_bin[i])];
+        trav = trav->next[atoi(bit.c_str())];
     }
 
-    trav->ip = ip_bin;
+    trav->ip = ip;
     trav->mask = mask;
 }
 
@@ -25,14 +26,16 @@ node* Trie::search(string ip) {
     node* match = NULL;
     string ip_bin = iptobin(ip);
 
-    for (int i = 0; i < ip_bin.size(); ++i) {
+    for (int i = 0; i <= ip_bin.size(); ++i) {
         if(trav->ip != "")
             match = trav;
 
-        if(trav->next[atoi(ip_bin[i])] == NULL)
+        string bit(1, ip_bin[i]);
+        
+        if(trav->next[atoi(bit.c_str())] == NULL)
             break;
         else {
-            trav = trav->next[atoi(ip_bin[i])];
+            trav = trav->next[atoi(bit.c_str())];
         }
     }
     return match;

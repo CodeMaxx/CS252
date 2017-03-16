@@ -1,4 +1,5 @@
 #include "trie.h"
+#include <string>
 
 int main()
 {
@@ -15,7 +16,7 @@ int main()
         cin >> address >> mask;
     }
 
-    int k = atoi(mask);
+    int k = atoi(mask.c_str());
 
     for (int i = 0; i < k; ++i) {
         cin >> address;
@@ -24,6 +25,6 @@ int main()
         if(match == NULL)
             cout << address << " " << "default" << endl;
         else
-            cout << address << " " << match->ip << " " << match->mask;
+            cout << address << " " << match->ip << " " << match->mask << endl;
     }
 }
