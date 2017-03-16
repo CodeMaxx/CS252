@@ -84,7 +84,7 @@ struct bridge
     {
         config_msg m = get<0>(mes);
         config_msg new_msg;
-        if(m.root_id < msg.root_id or (m.root_id == msg.root_id and m.dist + 1 < msg.dist))
+        if((m.root_id < msg.root_id or (m.root_id == msg.root_id and m.dist + 1 < msg.dist)) and get<1>(mes)->id != "")
         {
             new_msg.root_id = m.root_id;
             new_msg.dist = m.dist + 1;
@@ -106,7 +106,7 @@ struct bridge
 
         }
 
-        if(m.sender_id < id and port[get<1>(mes)] == "DP"){
+        if(get<1>(mes)->id != "" and m.sender_id < id and port.find(get<1>(mes)) != port.end() and port[get<1>(mes)] == "DP"){
             port[get<1>(mes)] = "NP";
             get<1>(mes)->designated_bridges.erase(remove(get<1>(mes)->designated_bridges.begin(),
                                                          get<1>(mes)->designated_bridges.end(), this->id),
@@ -119,6 +119,16 @@ struct bridge
 
     void forward(tuple<config_msg, lan*> mes, int time, ofstream &trace_file)
     {
+        for(unordered_map<lan*, string>::iterator it = port.begin(); it!=port.end(); )
+        {
+            if(it.first->id == "")
+            {
+                it = port.erase(it);
+            }
+            else
+                ++it;
+        }
+
         for(auto r: port)
         {
             if(r.first != get<1>(mes) and r.second != "NP")
@@ -127,8 +137,8 @@ struct bridge
                 for(auto s: l->bridges)
                 {
                     bridge* b = all_bridges[s];
-                    if(b->port[l] != "NP") {
-                        trace_file << time << " " << id << " " << "s" << b->id << "\n";
+                    if(b->port.find(l) != port.end() and b->port[l] != "NP") {
+                        trace_file << time << " " << id << " " << "s" << " " << b->id << "\n";
                         tuple < config_msg, lan * > tup(get<0>(mes), l);
                         b->new_queue.push_back(tup);
                     }
@@ -232,6 +242,8 @@ public:
                         l->bridges.push_back(bridge_name);
                         l->designated_bridges.push_back(bridge_name);
                         all_lan[l->id] = l;
+
+                        if(s != "")
                         bridges[i].port[l] = "DP";
                         stop_cond.push_back(l);
                     }
@@ -240,6 +252,8 @@ public:
                         lan* l = all_lan[s];
                         l->bridges.push_back(bridge_name);
                         l->designated_bridges.push_back(bridge_name);
+
+                        if(s != "")
                         bridges[i].port[all_lan[s]] = "DP";
                     }
                 }
