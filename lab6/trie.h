@@ -1,4 +1,5 @@
 #include <iostream>
+#include "utils.h"
 
 using namespace std;
 
@@ -29,6 +30,7 @@ class Trie
     node* root;
 
 public:
-    void insert();
-    node* search(string ip_bin);
+    Trie();
+    void insert(string ip, string mask);
+    node* search(string ip);
 };

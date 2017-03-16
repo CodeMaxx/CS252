@@ -32,8 +32,3 @@ int mask_len(string mask)
 
     return len;
 }
-
-int main()
-{
-    cout << mask_len("255.255.192.0") << endl;
-}
