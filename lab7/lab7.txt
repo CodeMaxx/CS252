@@ -1,0 +1,54 @@
+1. What is the laptop’s wireless interface MAC address ? Check the document (“Information for lab07….”, or tracefiles)
+Ans. 00:22:fa:2b:4f:50
+
+2. What is its private IP address?
+Ans. 192.168.0.7
+
+3. How did it get this address? (See sequence of packets in lab07trace1)
+ a)Study the first 10-12 packets of lab05trace1 (see info document for background). Describe the ‘start up’ routine of the laptop.
+ b)What is a “gratuitous ARP packet”?
+Ans. Got this Address from teh DHCP Offer and DHCP Ack.
+
+a. First, the laptop authenticates with the router using a four-way handshake.(Packet 1-4)
+Then it makes a DHCP request and asks for an IP Address(Packet 5). The DHCP server provides the IP address through DHCP(Packets 5-8).
+Sends grtuitous ARPs to inform others to update their ARP table()
+Then it uses IGMP to add itself to the multicast group.(Packet 12)
+
+b. gratuitous ARP packet is sent by the client to everyone else so that they can update their ARP table.
+
+4. What is the WiFi router’s other interface’s address?
+What other interesting things do you see in its configuration screens?
+Ans. 180.151.244.118 - We are on the LAN side of the router. The other side through which the router connects to the internet is the WAN side. This is the public IP address also. This IP is also taken on a lease from the ISP and can be renewed.
+
+5. What is the laptop’s “public” IP address?
+Hint: look at output of traceroute from Stanford to here (html file)
+Ans. 180.151.244.118
+
+6. Go to http://www.infosniper.net/ - what is your machine’s public IP address?
+Ans. 103.21.125.84
+
+7. Figure out/confirm how traceroute works by looking at the packet capture I did while running traceroute
+Ans. Packets are sent with increasing TTL(increasing by one for each hop). A response is sent back when the TTL reduces to 0. Thus we get a response from each hop. Traceroute sees the source IP from the responses.
+
+8.Look at the stanford-to-laptop (or vice versa) traceroute outputs
+a)Which hop took the longest time
+b)How are the delays correlated to the locations of the IP addresses (or distances between routers) on the path
+Ans. a) Hop 9 to 10
+b) As the distance increases the time increases. This hop is from California to New York
+
+9. Are routes to and from another host the same or different?
+Ans. Nope
+
+10. Look at netstat output when ssh session from my laptop to “login.iitb.ac.in” was on
+(Logging in to “login.iitb” results in to machine “surya” (a faculty server machine))
+a)Any interesting observations?
+Ans. We are able to capture the connections with other computers sshing on the same server.
+
+11. Is DHCP server always on the router?
+Ans. No! In general at our home, the router has the NAT box, acts as DHCP server... basically everything.
+
+12. What is the destination of membership request in IGMP protocol?
+Ans. It is one of the IP address reserved for multicast.
+
+13. Why send a gratuitous ARP?
+Ans. I think this is done so as to avoid flooding from every client when they want to find another client.
