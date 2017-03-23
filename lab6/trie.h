@@ -5,9 +5,11 @@ using namespace std;
 
 struct node
 {
+    // Each trie node will store the IP Address and the corresponding Mask so that it is easy to print
     string ip;
     string mask;
 
+    // Go to next[0] when 0 is encountered in the binary form of IP... similarly for next[1]
     node* next[2];
 
     node()
@@ -27,10 +29,10 @@ struct node
 
 class Trie
 {
-    node* root;
+    node* root; // Root of the Trie
 
 public:
     Trie();
-    void insert(string ip, string mask);
-    node* search(string ip);
+    void insert(string ip, string mask); // Insert an IP/Mask combination into the trie
+    node* search(string ip); // Searches the best IP/Mask combination for an IP Address query
 };

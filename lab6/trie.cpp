@@ -4,6 +4,9 @@ Trie::Trie() {
     root = new node();
 }
 
+
+/* The IP/Mask combination is stored in a node which is k steps
+ away from the root, where k is the number of 1's in the Mask */
 void Trie::insert(string ip, string mask) {
     node* trav = root;
     int len = mask_len(mask);
@@ -21,6 +24,9 @@ void Trie::insert(string ip, string mask) {
     trav->mask = mask;
 }
 
+
+/* Keep searching until you reach the end of the query IP or reach a NULL pointer.
+ * On the way, any "living node"(Node containing an IP/Mask combination stored */
 node* Trie::search(string ip) {
     node* trav = root;
     node* match = NULL;

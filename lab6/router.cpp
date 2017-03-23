@@ -7,8 +7,8 @@ int main()
 
     string address, mask;
 
-    cin >> address >> mask;
-    cin >> address >> mask;
+    cin >> address >> mask; // Read the table heading
+    cin >> address >> mask; // Read the first entry in the router table
 
     while(address != "default")
     {
@@ -16,7 +16,7 @@ int main()
         cin >> address >> mask;
     }
 
-    int k = atoi(mask.c_str());
+    int k = atoi(mask.c_str()); // Number of queries
 
     for (int i = 0; i < k; ++i) {
         cin >> address;
