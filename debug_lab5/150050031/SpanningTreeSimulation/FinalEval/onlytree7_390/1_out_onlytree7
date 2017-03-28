@@ -1,0 +1,8 @@
+B1: A-DP B-DP G-DP
+B2: F-DP G-RP
+B3: B-RP C-DP 
+B4: C-NP E-DP F-RP
+B5: C-RP D-DP E-NP 
+B6: E-NP F-RP H-DP 
+B7: D-RP H-NP
+B8: B-RP 

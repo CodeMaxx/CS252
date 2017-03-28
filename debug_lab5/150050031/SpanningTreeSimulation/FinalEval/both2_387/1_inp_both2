@@ -1,0 +1,12 @@
+0
+2
+B1: A B
+B2: B C
+A: H1 H2 H3
+B:
+C: H4 H5 H6
+4
+H1 H5
+H2 H1
+H5 H3
+H3 H5
