@@ -1,4 +1,5 @@
 #include "bridge.h"
+#include <stack>
 
 struct config_msg
 {
@@ -78,15 +79,15 @@ struct bridge
         this->id = id;
         this->is_root = is_root;
         this->msg = msg;
-        root_lan = NULL; // change_here
+        root_lan = NULL; // change here
     }
 
     void update_msg(tuple<config_msg, lan*> mes)
     {
         config_msg m = get<0>(mes);
         config_msg new_msg;
-        if((m.root_id < msg.root_id or (m.root_id == msg.root_id and m.dist + 1 < msg.dist)) and get<1>(mes)->id != "")
-        {
+        if((m.root_id < msg.root_id or (m.root_id == msg.root_id and (m.dist + 1 < msg.dist or (m.dist + 1 == msg.dist and (get<1>(mes)->id.compare(root_lan->id) == -1))))) and get<1>(mes)->id != "")
+        {// TODO Unchange here
             new_msg.root_id = m.root_id;
             new_msg.dist = m.dist + 1;
             new_msg.sender_id = this->id;
@@ -156,9 +157,6 @@ struct bridge
             forwarding_table[h1] = l;
         }
 
-        if(this->id == "B4" and h1 == "H9")
-            cout << "got it" << endl;
-
         if(forwarding_table.find(h2) == forwarding_table.end())
         {
             for(auto r: port)
@@ -185,7 +183,7 @@ struct bridge
                 for(auto s: l1->bridges)
                 {
                     bridge* b = all_bridges[s];
-                    if(b != this or true) {
+                    if(b != this) {
                         tuple < string, string, lan * > tup(h1, h2, l1);
                         b->new_data.push_back(tup);
                     }
@@ -349,10 +347,11 @@ public:
             string h1, h2;
             cin >> h1 >> h2;
             lan* l = hostsTOlan[h1];
-            bridge* b = all_bridges[l->designated_bridges[0]];
             tuple<string, string, lan*> tup(h1, h2, l);
-            b->old_data.push_back(tup);
-            for(int k = 0; k < 70; k++) // change this
+            for(auto m: l->bridges)
+                all_bridges[m]->old_data.push_back(tup); // change here
+            //b->old_data.push_back(tup);
+            for(int k = 0; k < 30; k++)
             {
                 for(int i = 0; i < num_bridges; i++)
                 {
@@ -375,9 +374,19 @@ public:
             {
                 cout << bridges[i].id << ":" << endl;
                 cout << "HOST ID | FORWARDING PORT" << endl;
-                for(auto r: bridges[i].forwarding_table)
+                stack<string> s;
+                stack<lan*> ls;
+                for(auto r: bridges[i].forwarding_table) // change here for printing/evalpro matching
                 {
-                    cout << r.first << " | " << r.second->id << endl;
+                    s.push(r.first);
+                    ls.push(r.second);
+                    //cout << r.first << " | " << r.second->id << endl;
+                }
+                while(!s.empty())
+                {
+                    cout << s.top() << " | " << (ls.top())->id << endl;
+                    s.pop();
+                    ls.pop();
                 }
             }
             cout << endl;
