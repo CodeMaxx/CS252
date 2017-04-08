@@ -1,0 +1,11 @@
+AF_UNSPEC - ADDRESS FAMILY IS UNSPECIFIED
+AI_PASSIVE - BY WHICH WE GET OUR OWN IP ADDRESS
+AI = Address Info
+
+0 means it is never going to timeout. We keep a timeout sometimes for security reasons, when we don't want it running throughout
+
+FD_ISSET is the method that looks through the list and checks which filedescriptors have events
+
+inet_ntop - converts ip address to printable form
+
+Use select instead of accept for continuous connection

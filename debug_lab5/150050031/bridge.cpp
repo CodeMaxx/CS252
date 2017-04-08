@@ -86,7 +86,7 @@ struct bridge
     {
         config_msg m = get<0>(mes);
         config_msg new_msg;
-        if((m.root_id < msg.root_id or (m.root_id == msg.root_id and (m.dist + 1 < msg.dist or (m.dist + 1 == msg.dist and (get<1>(mes)->id.compare(root_lan->id) == -1))))) and get<1>(mes)->id != "")
+        if((m.root_id < msg.root_id or (m.root_id == msg.root_id and m.dist + 1 < msg.dist) or (m.root_id == msg.root_id and m.dist + 1 == msg.dist and (get<1>(mes)->id.compare(root_lan->id) == -1))) and get<1>(mes)->id != "")
         {// TODO Unchange here
             new_msg.root_id = m.root_id;
             new_msg.dist = m.dist + 1;
@@ -139,7 +139,7 @@ struct bridge
                 for(auto s: l->bridges)
                 {
                     bridge* b = all_bridges[s];
-                    if(b->port.find(l) != port.end() and b->port[l] != "NP") {
+                    if(b->port.find(l) != port.end()) {
                         trace_file << time << " " << id << " " << "s" << " " << b->id << "\n";
                         tuple < config_msg, lan * > tup(get<0>(mes), l);
                         b->new_queue.push_back(tup);

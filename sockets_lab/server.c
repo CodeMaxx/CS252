@@ -59,12 +59,14 @@ int main(int argc, char *argv[])
      if (newsockfd < 0)
           error("ERROR on accept");
      // "connect" request form client is being "accpeted" by the accept() function.
-     bzero(buffer,256);
-     n = read(newsockfd,buffer,255); // Putting data from socket to buffer
-     if (n < 0) error("ERROR reading from socket");
-     printf("Here is the message: %s\n",buffer);
-     n = write(newsockfd,"I got your message",18); // Writing to socket
-     if (n < 0) error("ERROR writing to socket");
+    while(1) {
+        bzero(buffer,256);
+         n = read(newsockfd,buffer,255); // Putting data from socket to buffer
+         if (n < 0) error("ERROR reading from socket");
+         printf("Here is the message: %s\n",buffer);
+         n = write(newsockfd,"I got your message",18); // Writing to socket
+         if (n < 0) error("ERROR writing to socket");
+    }
      close(newsockfd);
      close(sockfd);
      return 0;
