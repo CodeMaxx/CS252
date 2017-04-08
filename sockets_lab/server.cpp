@@ -12,12 +12,36 @@
 #include <netinet/in.h>
 #include <thread>
 
-using namespace std;
-
 void error(const char *msg)
 {
     perror(msg);
     exit(1);
+}
+
+void read_thread(char buffer[], int *newsockfd)
+{
+    int n;
+    while(1)
+    {
+    bzero(buffer,256);
+     n = read(*newsockfd,buffer,255); // Putting data from socket to buffer
+     if (n < 0) error("ERROR reading from socket");
+     buffer[n-1] = '\0';
+     printf("Client: %s %d\n",buffer, n);
+ }
+}
+
+void write_thread(char buffer[], int *newsockfd)
+{
+    int n;
+    while(1)
+    {
+    bzero(buffer,256);
+    printf("You: ");
+     fgets(buffer,255,stdin);
+     n = write(*newsockfd,buffer,strlen(buffer)); // Writing to socket
+     if (n < 0) error("ERROR writing to socket");
+ }
 }
 
 int main(int argc, char *argv[])
@@ -25,7 +49,8 @@ int main(int argc, char *argv[])
      int sockfd, newsockfd, portno; // Socket handles are also file descriptors. Port Number where the communication will happen.
      // File descriptors are used by the operating system to file information about the files.
      socklen_t clilen;
-     char buffer[256]; // Read the socket and put characters into the buffer.
+     char read_buffer[256]; // Read the socket and put characters into the buffer.
+     char write_buffer[256];
      struct sockaddr_in serv_addr, cli_addr; // in stands for internet family addresses.
      int n;
      if (argc < 2) {
@@ -45,8 +70,7 @@ int main(int argc, char *argv[])
      serv_addr.sin_addr.s_addr = INADDR_ANY; // Pick up the localhost address
      serv_addr.sin_port = htons(portno); // Computer stores in a different way. So we convert it to how the networks mananges it.
      // Computer stores as little endian. Network takes big endian.
-     if (bind(sockfd, (struct sockaddr *) &serv_addr,
-              sizeof(serv_addr)) < 0) // We are binding the file descriptor and the server address.
+     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) // We are binding the file descriptor and the server address.
               error("ERROR on binding");
      listen(sockfd,5); // We will now only refer to our socket by the descriptor. At max 5 socket connections in waiting.
      // Probably 1 is connected and 5 are waiting. Check this!
@@ -65,15 +89,11 @@ int main(int argc, char *argv[])
      if (newsockfd < 0)
           error("ERROR on accept");
      // "connect" request form client is being "accpeted" by the accept() function.
-    while(1) {
-        bzero(buffer,256);
-         n = read(newsockfd,buffer,255); // Putting data from socket to buffer
-         if (n < 0) error("ERROR reading from socket");
-         buffer[n-1] = '\0';
-         printf("Here is the message: %s %d\n",buffer, n);
-         n = write(newsockfd,"I got your message",18); // Writing to socket
-         if (n < 0) error("ERROR writing to socket");
-    }
+      std::thread read_th(read_thread,read_buffer, &newsockfd);
+      std::thread write_th(write_thread,write_buffer, &newsockfd);
+
+      // read_th.join();
+      while(1){;}
      close(newsockfd);
      close(sockfd);
      return 0;
