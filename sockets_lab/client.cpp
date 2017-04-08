@@ -20,10 +20,27 @@ void read_thread(char buffer[], int *newsockfd)
     while(1)
     {
     bzero(buffer,256);
-     n = read(*newsockfd,buffer,255); // Putting data from socket to buffer
-     if (n < 0) error("ERROR reading from socket");
-     buffer[n-1] = '\0';
-     printf("Server: %s %d\n",buffer, n);
+    n = read(*newsockfd,buffer,255); // Putting data from socket to buffer
+    if (n < 0) error("ERROR reading from socket");
+    if(buffer[0] == '/')
+    {
+        if(strcmp(buffer, "/help"))
+        {
+            printf("/help - To get help\n");
+            printf("/register [username] - To start registration process\n");
+            printf("/login [username] [password]\n");
+            printf("/chat [Friend's Username] - To chat with a friend\n");
+            printf("/showall - Show all registered users\n");
+            printf("/showOnline - Show all online users\n");
+            printf("/logout - To logout and quit\n");
+            printf("/sendfile - To send file to friend\n");
+        }
+    }
+    else
+    {
+        buffer[n-1] = '\0';
+        printf("Client: %s %d\n",buffer, n);
+    }
  }
 }
 
@@ -34,11 +51,12 @@ void write_thread(char buffer[], int *newsockfd)
     {
     bzero(buffer,256);
     printf("You: ");
-     fgets(buffer,255,stdin);
-     n = write(*newsockfd,buffer,strlen(buffer)); // Writing to socket
-     if (n < 0) error("ERROR writing to socket");
+    fgets(buffer,255,stdin);
+    n = write(*newsockfd,buffer,strlen(buffer)); // Writing to socket
+    if (n < 0) error("ERROR writing to socket");
  }
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -67,8 +85,8 @@ int main(int argc, char *argv[])
     // Populating server address structure
     serv_addr.sin_family = AF_INET;
     bcopy((char *)server->h_addr,
-         (char *)&serv_addr.sin_addr.s_addr,
-         server->h_length); // Now IP we got from gethostbyname is added to this structure
+        (char *)&serv_addr.sin_addr.s_addr,
+        server->h_length); // Now IP we got from gethostbyname is added to this structure
 
     serv_addr.sin_port = htons(portno); // Note there is ntohs() also
 
@@ -78,7 +96,7 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
         error("ERROR connecting");
     std::thread read_th(read_thread,read_buffer, &sockfd);
-      std::thread write_th(write_thread,write_buffer, &sockfd);
+    std::thread write_th(write_thread,write_buffer, &sockfd);
 
     //read_th.join();
     while(1){;}
